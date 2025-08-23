@@ -1,6 +1,7 @@
 import discord
 import os
 import asyncio
+from typing import Union
 from discord.ext import commands
 from dotenv import load_dotenv, dotenv_values 
 # loading variables from .env file
@@ -68,5 +69,4 @@ async def on_command_error(ctx, error):
     print(f"❌ Error: {error}")  # Log error in terminal
     await ctx.send(f"⚠️ Error: {error}")  # Tell user
 
-# Run bot (replace with your token)
 bot.run(os.getenv("discord_bot_token"))
