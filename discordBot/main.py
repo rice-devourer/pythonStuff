@@ -1,5 +1,6 @@
 import discord
 import os
+import asyncio
 from discord.ext import commands
 from dotenv import load_dotenv, dotenv_values 
 # loading variables from .env file
@@ -32,10 +33,15 @@ async def say(ctx, *, message: str):
 async def on_message(message):
     if message.author == bot.user:
         return  # Prevent bot from replying to itself
+    
+    if message.content.startswith("!"):
+        await bot.process_commands(message)
+        return
+
 
     if "hello" in message.content.lower():
         await message.channel.send("Hello there! 👋")
-
+    
     # Process commands (required when overriding on_message)
     await bot.process_commands(message)
 
@@ -47,6 +53,14 @@ async def on_message(message):
 async def shutdown(ctx):
     await ctx.send("Shutting down... 🛑")
     await bot.close()
+
+@bot.command()
+@commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
+async def hello(ctx):
+    for i in range(3):
+        await asyncio.sleep(0.5)
+        await ctx.send("j")
+        
 
 # Global error handler
 @bot.event
