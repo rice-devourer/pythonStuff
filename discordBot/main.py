@@ -1,72 +1,33 @@
 import discord
-import os
-import asyncio
-from typing import Union
 from discord.ext import commands
-from dotenv import load_dotenv, dotenv_values 
-# loading variables from .env file
-load_dotenv() 
+import os, asyncio
 
-# Intents are required for Discord bots to function properly
-intents = discord.Intents.default()
-intents.message_content = True  # Enable if you want to read message content
+intents = discord.Intents.default() #set up needed intents
+intents.message_content = True  
+intents.members = True          
+intents.guild_typing = True
+intents.auto_moderation_configuration = True
+intents.auto_moderation_execution = True
+intents.dm_messages = True
+intents.guild_messages = True
+intents.guild_reactions = True
 
-# Create bot instance with a prefix (e.g., "!")
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents) #get bot obj
 
-# Event: When bot is ready
-@bot.event
-async def on_ready():
+@bot.event 
+async def on_ready(): #ready event
     print(f"✅ Logged in as {bot.user}")
 
-# Command: Ping
-@bot.command()
-async def ping(ctx):
-    await ctx.send("Pong! 🏓")
+# loads all the cogs inside cogs
+async def load_cogs():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py"):
+            await bot.load_extension(f"cogs.{filename[:-3]}")
 
-# Command: Echo user input
-@bot.command()
-async def say(ctx, *, message: str):
-    await ctx.send(message)
+async def main():
+    async with bot:
+        await load_cogs()
+        await bot.start(os.getenv("discord_bot_token")) #runs bot
 
-# Event: When a message is sent (optional)
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return  # Prevent bot from replying to itself
-    
-    if message.content.startswith("!"):
-        await bot.process_commands(message)
-        return
-
-
-    if "hello" in message.content.lower():
-        await message.channel.send("Hello there! 👋")
-    
-    # Process commands (required when overriding on_message)
-    await bot.process_commands(message)
-
-
-
-# Shutdown command (owner only)
-@bot.command()
-@commands.is_owner()
-async def shutdown(ctx):
-    await ctx.send("Shutting down... 🛑")
-    await bot.close()
-
-@bot.command()
-@commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
-async def hello(ctx):
-    for i in range(3):
-        await asyncio.sleep(0.5)
-        await ctx.send("j")
-        
-
-# Global error handler
-@bot.event
-async def on_command_error(ctx, error):
-    print(f"❌ Error: {error}")  # Log error in terminal
-    await ctx.send(f"⚠️ Error: {error}")  # Tell user
-
-bot.run(os.getenv("discord_bot_token"))
+if __name__ == "__main__": #main method
+    asyncio.run(main()) #runs everything
