@@ -1,6 +1,10 @@
 import discord
 from discord.ext import commands
-import os, asyncio
+from dotenv import load_dotenv
+import os
+import asyncio
+import pathlib
+load_dotenv()
 
 intents = discord.Intents.default() #set up needed intents
 intents.message_content = True  
@@ -20,9 +24,12 @@ async def on_ready(): #ready event
 
 # loads all the cogs inside cogs
 async def load_cogs():
-    for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"):
-            await bot.load_extension(f"cogs.{filename[:-3]}")
+    base_dir = pathlib.Path(__file__).parent
+    cogs_dir = base_dir / "cogs"
+
+    for path in cogs_dir.glob("*.py"):
+        await bot.load_extension(f"cogs.{path.stem}")
+        print(f"🔌 Loaded {path.stem}")
 
 async def main():
     async with bot:
